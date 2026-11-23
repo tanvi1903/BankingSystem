@@ -8,12 +8,22 @@ A concurrent, idempotent, and auditable banking transaction engine built with **
 - **Database:** MySQL 8.0+
 - **Build Tool:** Maven Wrapper (`mvnw`)
 
-## Project Structure (Day 1 Foundation)
+## Project Structure
 - `src/main/resources/db/schema.sql` — Normalized DDL (`customer`, `account`, `transactions`, `transaction_audit`, `failed_transaction`) with PKs, FKs, check constraints, and indexes.
 - `src/main/resources/db/seed.sql` — Initial test customers and accounts.
 - `src/main/java/com/banking/bankingsystem/entity/` — JPA entity mappings.
 - `src/main/java/com/banking/bankingsystem/repository/` — Spring Data JPA repositories with pessimistic row locking (`PESSIMISTIC_WRITE`).
 - `src/main/java/com/banking/bankingsystem/exception/` — Domain-specific custom exceptions (`InsufficientBalanceException`, `AccountNotFoundException`, `DuplicateTransactionException`, `InvalidTransactionException`).
+- `src/main/java/com/banking/bankingsystem/config/` — Role-based Spring Security configuration (`ADMIN` vs `CUSTOMER`).
+- `src/main/java/com/banking/bankingsystem/dto/` — Validated request and response DTOs (`TransactionRequest`, `TransactionResponse`, `AccountResponse`).
+- `src/main/java/com/banking/bankingsystem/service/` — Atomic deadlock-free `TransactionServiceImpl`, `AccountService`, and `REQUIRES_NEW` rollback-safe `AuditService`.
+
+## Default Security Credentials (RBAC)
+| Role | Username | Password | Access Scope |
+|---|---|---|---|
+| **Bank Manager (`ROLE_ADMIN`)** | `admin` | `admin123` | Full system access: Failed transactions, audit logs, daily reports, all accounts, concurrency simulator |
+| **Customer (`ROLE_CUSTOMER`)** | `customer1` | `cust123` | View accounts, deposit, withdraw, transfer, view transaction history |
+| **Customer (`ROLE_CUSTOMER`)** | `customer2` | `cust123` | View accounts, deposit, withdraw, transfer, view transaction history |
 
 ## Local Setup & Run Instructions
 
@@ -34,7 +44,7 @@ A concurrent, idempotent, and auditable banking transaction engine built with **
 
 ## Roadmap
 - [x] **Day 1:** Database schema, seed data, JPA entities, pessimistic locking repositories, custom exceptions
-- [ ] **Day 2:** Role-based security (`ADMIN` / `CUSTOMER`), DTOs, and atomic Transaction Engine (`DEPOSIT`, `WITHDRAWAL`, `TRANSFER`, idempotency, audit trail)
+- [x] **Day 2:** Role-based security (`ADMIN` / `CUSTOMER`), DTOs, rollback-safe failure auditing (`REQUIRES_NEW`), and atomic deadlock-free Transaction Engine (`DEPOSIT`, `WITHDRAWAL`, `TRANSFER`, idempotency)
 - [ ] **Day 3:** REST APIs, Global Exception Handler, and Structured Logging
 - [ ] **Day 4:** Concurrency Simulator (`1 / 5 / 10 / 20` worker threads, `50,000+` transactions) & SQL Reporting + `EXPLAIN` plans
 - [ ] **Day 5:** Automated JUnit 5 Concurrency, Duplicate Idempotency & Rollback Tests
