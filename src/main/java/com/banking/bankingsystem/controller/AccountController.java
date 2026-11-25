@@ -1,4 +1,4 @@
-﻿package com.banking.bankingsystem.controller;
+package com.banking.bankingsystem.controller;
 
 import com.banking.bankingsystem.dto.AccountResponse;
 import com.banking.bankingsystem.service.AccountService;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -44,9 +43,9 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/balance")
-    public ResponseEntity> getAccountBalance(@PathVariable Long accountId) {
+    public ResponseEntity<Object> getAccountBalance(@PathVariable Long accountId) {
         AccountResponse account = accountService.getAccountById(accountId);
-        Map<String, Object> response = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
         response.put("accountId", account.accountId());
         response.put("accountNumber", account.accountNumber());
         response.put("balance", account.balance() != null ? account.balance() : BigDecimal.ZERO);
