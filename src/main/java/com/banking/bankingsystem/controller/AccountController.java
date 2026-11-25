@@ -1,6 +1,6 @@
 package com.banking.bankingsystem.controller;
 
-import com.banking.bankingsystem.dto.AccountResponse;
+import com.banking.bankingsystem.dto.response.AccountResponse;
 import com.banking.bankingsystem.service.AccountService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,28 +28,25 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}")
-    public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long accountId) {
+    public ResponseEntity<AccountResponse> getAccountById(@PathVariable String accountId) {
         return ResponseEntity.ok(accountService.getAccountById(accountId));
     }
 
-    @GetMapping("/number/{accountNumber}")
-    public ResponseEntity<AccountResponse> getAccountByNumber(@PathVariable String accountNumber) {
-        return ResponseEntity.ok(accountService.getAccountByNumber(accountNumber));
-    }
-
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<AccountResponse>> getAccountsByCustomer(@PathVariable Long customerId) {
+    public ResponseEntity<List<AccountResponse>> getAccountsByCustomer(@PathVariable String customerId) {
         return ResponseEntity.ok(accountService.getAccountsByCustomerId(customerId));
     }
 
     @GetMapping("/{accountId}/balance")
-    public ResponseEntity<Object> getAccountBalance(@PathVariable Long accountId) {
+    public ResponseEntity<Object> getAccountBalance(@PathVariable String accountId) {
         AccountResponse account = accountService.getAccountById(accountId);
         LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        response.put("accountId", account.accountId());
-        response.put("accountNumber", account.accountNumber());
-        response.put("balance", account.balance() != null ? account.balance() : BigDecimal.ZERO);
-        response.put("status", account.status());
+        response.put("accountId", account.getAccountId());
+        response.put("customerId", account.getCustomerId());
+        response.put("customerName", account.getCustomerName());
+        response.put("accountType", account.getAccountType());
+        response.put("balance", account.getBalance() != null ? account.getBalance() : BigDecimal.ZERO);
+        response.put("status", account.getStatus());
         return ResponseEntity.ok(response);
     }
 }
