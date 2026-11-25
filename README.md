@@ -50,3 +50,41 @@ A concurrent, idempotent, and auditable banking transaction engine built with **
 - [ ] **Day 5:** Automated JUnit 5 Concurrency, Duplicate Idempotency & Rollback Tests
 - [ ] **Day 6:** Web UI Dashboard (Customer Portal + Admin Benchmark & Audit Console)
 - [ ] **Day 7:** Final Documentation, Architecture/ER Diagrams & End-to-End Verification
+---
+
+## Day 3: REST APIs, Global Exception Handling & Structured Logging
+
+### 1. API Endpoints Overview
+
+#### Account APIs (`CUSTOMER` / `ADMIN`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/accounts` | List all bank accounts |
+| `GET` | `/api/accounts/{accountId}` | Get account details by ID |
+| `GET` | `/api/accounts/customer/{customerId}` | List all accounts for a customer |
+| `GET` | `/api/accounts/{accountId}/balance` | Check real-time balance and status |
+
+#### Transaction APIs (`CUSTOMER` / `ADMIN`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/transactions/process` | Process `DEPOSIT`, `WITHDRAWAL`, or `TRANSFER` |
+| `POST` | `/api/transactions/deposit` | Deposit funds into target account |
+| `POST` | `/api/transactions/withdraw` | Withdraw funds from source account |
+| `POST` | `/api/transactions/transfer` | Atomic transfer with deadlock-safe locking |
+| `GET` | `/api/transactions/account/{accountId}` | View transaction history for an account |
+| `GET` | `/api/transactions` | List all processed transactions |
+
+#### Admin Reporting APIs (`ADMIN` Only)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/failed-transactions` | View all rejected/failed transactions |
+| `GET` | `/api/admin/audits` | View complete audit trail (`beforeBalance`, `afterBalance`, `threadName`, `durationMs`) |
+| `GET` | `/api/admin/summary` | View system-wide liquidity, success/failure counts, and average execution latency |
+
+### 2. Standardized Error Responses & Correlation Tracing
+- Every request receives an `X-Correlation-ID` response header and logs `[corrId=... user=...]` via SLF4J MDC.
+- Domain exceptions map cleanly via `@RestControllerAdvice` (`GlobalExceptionHandler`):
+  - `400 Bad Request`: `INSUFFICIENT_BALANCE`, `INVALID_TRANSACTION`, `VALIDATION_FAILED`
+  - `403 Forbidden`: `ACCESS_DENIED`
+  - `404 Not Found`: `ACCOUNT_NOT_FOUND`
+  - `409 Conflict`: `DUPLICATE_TRANSACTION`
