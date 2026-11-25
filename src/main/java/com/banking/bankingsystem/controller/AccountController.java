@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +46,11 @@ public class AccountController {
     @GetMapping("/{accountId}/balance")
     public ResponseEntity> getAccountBalance(@PathVariable Long accountId) {
         AccountResponse account = accountService.getAccountById(accountId);
-        return ResponseEntity.ok(Map.of(
-                "accountId", account.accountId(),
-                "accountNumber", account.accountNumber(),
-                "balance", account.balance() != null ? account.balance() : BigDecimal.ZERO,
-                "status", account.status()
-        ));
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("accountId", account.accountId());
+        response.put("accountNumber", account.accountNumber());
+        response.put("balance", account.balance() != null ? account.balance() : BigDecimal.ZERO);
+        response.put("status", account.status());
+        return ResponseEntity.ok(response);
     }
 }
