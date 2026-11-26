@@ -88,3 +88,8 @@ A concurrent, idempotent, and auditable banking transaction engine built with **
   - `403 Forbidden`: `ACCESS_DENIED`
   - `404 Not Found`: `ACCOUNT_NOT_FOUND`
   - `409 Conflict`: `DUPLICATE_TRANSACTION`
+### Concurrency Simulator Endpoints (Admin Only)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/admin/simulate/withdrawals` | Concurrent withdrawal stress test on a single account |
+| `POST` | `/api/admin/simulate/bidirectional-transfers` | Bidirectional `ACC1001 <-> ACC1002` deadlock stress test |
