@@ -500,6 +500,35 @@ export default function App() {
     }
   };
 
+  const runPdfConcurrencyDemo = () => {
+    const initial = 5000;
+    const req1 = 3000;
+    const req2 = 4000;
+    const afterReq1 = initial - req1;
+    const summaryText = `PDF Slide Audit (₹5,000 Balance): Thread-1 ₹${req1} APPROVED (Remaining: ₹${afterReq1}) | Thread-2 ₹${req2} BLOCKED (Insufficient Balance). Zero Overdraft!`;
+    setAuditBanner(summaryText);
+    setAuditLogs((prev) => [
+      { time: new Date().toLocaleTimeString(), title: 'PDF Scenario: ₹5,000 vs ₹3,000 + ₹4,000 Race Test', detail: summaryText },
+      ...prev,
+    ]);
+    recordActivity(session.username, 'ADMIN', 'SECURITY', 'Executed PDF Concurrency Scenario', summaryText);
+  };
+
+  const exportTransactionsCsv = () => {
+    const headers = ['Transaction ID,Initiated By,Type,Description,Source,Destination,Amount,Status,Time'];
+    const rows = filteredTx.map((t) =>
+      `"${t.id}","${t.actor || 'customer1'}","${t.type}","${t.title}","${t.src}","${t.dest}","${t.amount}","${t.status}","${t.time}"`
+    );
+    const blob = new Blob([headers.concat(rows).join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `banking-ledger-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const runConcurrencyCheck = async () => {
     setAuditBanner('Running 10-thread concurrent withdrawal & double-spend test on ACC1001...');
     try {
@@ -871,6 +900,7 @@ export default function App() {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button className="nb-btn-emerald nb-btn-sm" onClick={exportTransactionsCsv}>⬇ Export CSV</button>
                 {['ALL', 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER'].map((f) => (
                   <button
                     key={f}
@@ -1010,6 +1040,13 @@ export default function App() {
                   Executes simultaneous cross-transfers (ACC1001 ↔ ACC1002) using ordered pessimistic row locks.
                 </p>
                 <button className="nb-btn-primary" onClick={runDeadlockCheck}>Run Deadlock Stress Test</button>
+              </div>
+              <div className="audit-card">
+                <h4 style={{ margin: '0 0 8px' }}>3. PDF Scenario: ₹5,000 vs ₹3,000 + ₹4,000</h4>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', marginBottom: 14 }}>
+                  Verifies pessimistic locking when two threads attempt ₹3,000 and ₹4,000 withdrawals on a ₹5,000 balance.
+                </p>
+                <button className="nb-btn-emerald" onClick={runPdfConcurrencyDemo}>Verify PDF Scenario</button>
               </div>
             </div>
 
