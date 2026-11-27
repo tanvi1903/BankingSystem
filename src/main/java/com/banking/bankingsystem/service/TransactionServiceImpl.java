@@ -75,7 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
             tx.setAmount(req.getAmount());
             tx.setStatus(TransactionStatus.SUCCESS);
             tx.setChannel(req.getChannel() != null ? req.getChannel() : ChannelType.WEB);
-            Transaction savedTx = transactionRepository.save(tx);
+            Transaction savedTx = transactionRepository.saveAndFlush(tx);
 
             // Step 7: Persist Success Audit Trail (with before & after balance)
             long duration = System.currentTimeMillis() - startTime;

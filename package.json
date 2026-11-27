@@ -1,0 +1,7 @@
+{
+  "name": "banking-system-fullstack",
+  "private": true,
+  "scripts": {
+    "dev": "node dev-runner.js"
+  }
+}

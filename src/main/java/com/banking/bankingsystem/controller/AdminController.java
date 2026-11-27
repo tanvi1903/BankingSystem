@@ -9,14 +9,18 @@ import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.FailedTransactionRepository;
 import com.banking.bankingsystem.repository.TransactionAuditRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
+import com.banking.bankingsystem.service.ConcurrencySimulationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -26,29 +30,39 @@ public class AdminController {
     private final TransactionRepository transactionRepository;
     private final TransactionAuditRepository transactionAuditRepository;
     private final FailedTransactionRepository failedTransactionRepository;
+    private final ConcurrencySimulationService simulationService;
 
     public AdminController(AccountRepository accountRepository,
                            TransactionRepository transactionRepository,
                            TransactionAuditRepository transactionAuditRepository,
-                           FailedTransactionRepository failedTransactionRepository) {
+                           FailedTransactionRepository failedTransactionRepository,
+                           ConcurrencySimulationService simulationService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAuditRepository = transactionAuditRepository;
         this.failedTransactionRepository = failedTransactionRepository;
+        this.simulationService = simulationService;
+    }
+
+    @PostMapping("/benchmark")
+    public ResponseEntity runMixed50kBenchmark(
+            @RequestParam(defaultValue = "10") int threads,
+            @RequestParam(defaultValue = "50000") int totalTransactions) throws InterruptedException {
+        return ResponseEntity.ok(simulationService.simulateMixed50kBenchmark(threads, totalTransactions));
     }
 
     @GetMapping("/failed-transactions")
-    public ResponseEntity<List<FailedTransaction>> getFailedTransactions() {
+    public ResponseEntity getFailedTransactions() {
         return ResponseEntity.ok(failedTransactionRepository.findAll());
     }
 
     @GetMapping("/audits")
-    public ResponseEntity<List<TransactionAudit>> getAuditTrail() {
+    public ResponseEntity getAuditTrail() {
         return ResponseEntity.ok(transactionAuditRepository.findAll());
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<Object> getSystemSummary() {
+    public ResponseEntity getSystemSummary() {
         List<Account> accounts = accountRepository.findAll();
         List<Transaction> transactions = transactionRepository.findAll();
         List<TransactionAudit> audits = transactionAuditRepository.findAll();
