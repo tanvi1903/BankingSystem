@@ -1,4 +1,7 @@
 package com.banking.bankingsystem.controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
 
 import com.banking.bankingsystem.dto.response.AccountResponse;
 import com.banking.bankingsystem.service.AccountService;
@@ -48,5 +51,23 @@ public class AccountController {
         response.put("balance", account.getBalance() != null ? account.getBalance() : BigDecimal.ZERO);
         response.put("status", account.getStatus());
         return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(value = "/{accountNumber}/status", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<?> updateAccountStatus(
+            @PathVariable String accountNumber,
+            @RequestBody(required = false) Map<String, String> body,
+            @RequestParam(required = false) String status) {
+        String newStatus = (body != null && body.get("status") != null) ? body.get("status") : status;
+        return accountRepository.findByAccountNumber(accountNumber)
+                .map(acc -> {
+                    if (newStatus != null && !newStatus.isBlank()) {
+                        acc.setStatus(newStatus.toUpperCase());
+                    } else {
+                        acc.setStatus("FROZEN".equalsIgnoreCase(acc.getStatus()) ? "ACTIVE" : "FROZEN");
+                    }
+                    return ResponseEntity.ok(accountRepository.save(acc));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
